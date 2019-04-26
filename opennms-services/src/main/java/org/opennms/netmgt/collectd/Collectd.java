@@ -30,6 +30,7 @@ package org.opennms.netmgt.collectd;
 
 import static org.opennms.core.utils.InetAddressUtils.str;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -996,6 +997,13 @@ public class Collectd extends AbstractServiceDaemon implements
         LOG.debug("nodeCategoryMembershipChanged: unscheduling nodeid {} completed.", nodeId);
         
         m_filterDao.flushActiveIpAddressListCache();
+
+        try {
+            ThreshdConfigFactory.reload();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         scheduleNode(nodeId.intValue(), true);
     }
 

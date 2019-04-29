@@ -1,5 +1,5 @@
-ARG BASE_IMAGE="opennms/openjdk"
-ARG BASE_IMAGE_VERSION="latest"
+ARG BASE_IMAGE="opennms/minion-base"
+ARG BASE_IMAGE_VERSION="1.0.0"
 
 FROM ${BASE_IMAGE}:${BASE_IMAGE_VERSION}
 
@@ -8,10 +8,6 @@ ARG BUILD_DATE="1970-01-01T00:00:00+0000"
 
 ARG USER="minion"
 
-ARG REPO_KEY_URL="https://${REPO_HOST}/OPENNMS-GPG-KEY"
-ARG REPO_RPM="https://${REPO_HOST}/repofiles/opennms-repo-${REPO_RELEASE}-rhel7.noarch.rpm"
-
-ARG PACKAGES="wget gettext"
 ARG MINION_PACKAGES="opennms-minion"
 
 COPY ./rpms /tmp/rpms
@@ -19,11 +15,7 @@ COPY ./rpms /tmp/rpms
 SHELL ["/bin/bash", "-c"]
 
 # Install repositories, system and OpenNMS packages and do some cleanup
-RUN yum -y install epel-release && \
-    rpm --import "${REPO_KEY_URL}" && \
-    yum -y install ${REPO_RPM} && \
-    yum -y install ${PACKAGES} && \
-    if [ "$(ls -1 /tmp/rpms/*.rpm 2>/dev/null | wc -l)" != 0 ]; then yum -y localinstall /tmp/rpms/*.rpm; else yum -y install ${MINION_PACKAGES}; fi && \
+RUN if [ "$(ls -1 /tmp/rpms/*.rpm 2>/dev/null | wc -l)" != 0 ]; then yum -y localinstall /tmp/rpms/*.rpm; else yum -y install ${MINION_PACKAGES}; fi && \
     rm -rf /tmp/rpms && \
     yum clean all && \
     rm -rf /var/cache/yum && \

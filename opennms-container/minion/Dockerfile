@@ -8,15 +8,10 @@ ARG BUILD_DATE="1970-01-01T00:00:00+0000"
 
 ARG USER="minion"
 
-ARG REPO_RELEASE="stable"
-ARG REPO_HOST="yum.opennms.org"
-
 ARG REPO_KEY_URL="https://${REPO_HOST}/OPENNMS-GPG-KEY"
-
 ARG REPO_RPM="https://${REPO_HOST}/repofiles/opennms-repo-${REPO_RELEASE}-rhel7.noarch.rpm"
 
 ARG PACKAGES="wget gettext"
-
 ARG MINION_PACKAGES="opennms-minion"
 
 COPY ./rpms /tmp/rpms
@@ -43,8 +38,7 @@ LABEL maintainer="The OpenNMS Group" \
       name="Minion" \
       version="${VERSION}" \
       build.date="${BUILD_DATE}" \
-      vendor="OpenNMS Community" \
-      org.opennms.repo.release="${REPO_RELEASE}"
+      vendor="OpenNMS Community"
 
 ENTRYPOINT [ "/entrypoint.sh" ]
 

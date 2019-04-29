@@ -2,25 +2,23 @@
 
 # shellcheck disable=SC2034
 
+# Relative path to helper build helper scripts
+SCRIPTS_PATH="../../.circleci/scripts"
+
 # Base Image Dependency
 BASE_IMAGE="opennms/openjdk"
-BASE_IMAGE_VERSION="1.8.0.191.b12-b3"
+BASE_IMAGE_VERSION="1.8.0.201.b09-b1"
 BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%S%z")"
 
 # Sentinel Image versioning
-# Floating tag name
-VERSION="bleeding"
+VERSION=$("${SCRIPTS_PATH}"/version-from-pom.py ../../pom.xml)
 
-# Allow a manual build number which allows to overwrite an existing image
-BUILD_NUMBER="b1"
-
-# Floating tags
-IMAGE_VERSION=("${VERSION}-${BUILD_NUMBER}"
-               "${VERSION}")
+# Use version number for OCI tags
+IMAGE_VERSION=("${VERSION}")
 
 # Most specific tag when it is not build locally and in CircleCI
 if [ -n "${CIRCLE_BUILD_NUM}" ]; then
-  IMAGE_VERSION+=("${VERSION}-${BUILD_NUMBER}.${CIRCLE_BUILD_NUM}")
+  IMAGE_VERSION+=("${VERSION}-cb.${CIRCLE_BUILD_NUM}")
 fi
 
 REPO_HOST="yum.opennms.org"

@@ -80,13 +80,13 @@ commands:
           command: |
             docker login -u ${DOCKERHUB_LOGIN} -p ${DOCKERHUB_PASS}
 
-  bash-alpine:
+  script-env-alpine:
     description: "Add bash support in Alpine based images"
     steps:
       - run:
           name: Add bash support
           command: |
-            apk add --no-cache bash
+            apk add --no-cache bash python
 
 workflows:
   build-deploy:
@@ -112,15 +112,40 @@ workflows:
             - build-horizon-oci
             - build-minion-oci
             - build-sentinel-oci
-           #- publish-horizon-oci:
-           #    requires:
-           #      - build-horizon-oci
-           #- publish-minion-oci:
-           #    requires:
-           #      - build-minion-oci
-           #- publish-sentinel-oci:
-           #    requires:
-           #      - build-sentinel-oci
+
+      - publish-horizon-oci:
+          requires:
+            - build-horizon-oci
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only:
+                - master
+                - develop
+                - jira/HZN-1556
+      - publish-minion-oci:
+          requires:
+            - build-minion-oci
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only:
+                - master
+                - develop
+                - jira/HZN-1556
+      - publish-sentinel-oci:
+          requires:
+            - build-sentinel-oci
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only:
+                - master
+                - develop
+                - jira/HZN-1556
 
 jobs:
   build:
@@ -172,7 +197,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - setup_remote_docker
-      - bash-alpine
+      - script-env-alpine
       - run:
           name: Fetch RPM artifacts and build Horizon container image
           command: |
@@ -193,7 +218,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - setup_remote_docker
-      - bash-alpine
+      - script-env-alpine
       - run:
           name: Fetch RPM artifacts and build Minion container image
           command: |
@@ -214,7 +239,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - setup_remote_docker
-      - bash-alpine
+      - script-env-alpine
       - run:
           name: Fetch RPM artifacts and build Sentinel container image
           command: |
@@ -291,15 +316,14 @@ jobs:
       - attach_workspace:
           at: ~/
       - setup_remote_docker
-      - bash-alpine
+      - script-env-alpine
       - dockerhub-login
       - run:
           name: Load Horizon OCI image, tag it and publish to registry
           command: |
             cd opennms-container/horizon
             docker image load -i images/container.oci
-            ./tag.sh
-            ./publish.sh
+            ../tag-n-push.sh
 
   publish-minion-oci:
     executor: docker-executor
@@ -307,15 +331,14 @@ jobs:
       - attach_workspace:
           at: ~/
       - setup_remote_docker
-      - bash-alpine
+      - script-env-alpine
       - dockerhub-login
       - run:
           name: Load Minion OCI image, tag it and publish to registry
           command: |
             cd opennms-container/minion
             docker image load -i images/container.oci
-            ./tag.sh
-            ./publish.sh
+            ../tag-n-push.sh
 
   publish-sentinel-oci:
     executor: docker-executor
@@ -323,12 +346,11 @@ jobs:
       - attach_workspace:
           at: ~/
       - setup_remote_docker
-      - bash-alpine
+      - script-env-alpine
       - dockerhub-login
       - run:
           name: Load Sentinel OCI image, tag it and publish to registry
           command: |
             cd opennms-container/sentinel
             docker image load -i images/container.oci
-            ./tag.sh
-            ./publish.sh
+            ../tag-n-push.sh

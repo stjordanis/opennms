@@ -37,12 +37,16 @@ usage() {
 }
 
 install() {
-  echo "Run OpenNMS install command to initialize or upgrade the database schema and configurations."
-  ${JAVA_HOME}/bin/java -Dopennms.home="${OPENNMS_HOME}" -Dlog4j.configurationFile="${OPENNMS_HOME}"/etc/log4j2-tools.xml -cp "${OPENNMS_HOME}/lib/opennms_bootstrap.jar" org.opennms.bootstrap.InstallerBootstrap "${@}" || exit ${E_INIT_CONFIG}
+  if [[ -f "${OPENNMS_HOME}/etc/configured" ]]; then
+    echo "Your OpenNMS instance is already configured. Skip install -dis instruction. If you want to run an update, please delete the configured file and restart."
+  else
+    echo "Run OpenNMS install command to initialize or upgrade the database schema and configurations."
+    ${JAVA_HOME}/bin/java -Dopennms.home="${OPENNMS_HOME}" -Dlog4j.configurationFile="${OPENNMS_HOME}"/etc/log4j2-tools.xml -cp "${OPENNMS_HOME}/lib/opennms_bootstrap.jar" org.opennms.bootstrap.InstallerBootstrap "${@}" || exit ${E_INIT_CONFIG}
+  fi
 }
 
 initNewts() {
-  if [ -n "${INIT_NEWTS}" ]; then
+  if [[ -n "${INIT_NEWTS}" ]]; then
     REPLICATION_FACTOR=${REPLICATION_FACTOR-1}
     ${JAVA_HOME}/bin/java -Dopennms.manager.class="org.opennms.netmgt.newts.cli.Newts" -Dopennms.home="${OPENNMS_HOME}" -Dlog4j.configurationFile="${OPENNMS_HOME}"/etc/log4j2-tools.xml -jar ${OPENNMS_HOME}/lib/opennms_bootstrap.jar init -r ${REPLICATION_FACTOR} || exit ${E_INIT_CONFIG}
   fi
@@ -60,12 +64,12 @@ processConfdTemplates() {
 
 # Initialize configuration directory from etc-pristine when empty
 initConfigWhenEmpty() {
-  if [ ! -d ${OPENNMS_HOME} ]; then
+  if [[ ! -d ${OPENNMS_HOME} ]]; then
     echo "OpenNMS home directory doesn't exist in ${OPENNMS_HOME}."
     exit ${E_ILLEGAL_ARGS}
   fi
 
-  if [ ! "$(ls --ignore .git --ignore .gitignore --ignore ${OPENNMS_DATASOURCES_CFG} --ignore ${OPENNMS_KARAF_CFG} -A ${OPENNMS_HOME}/etc)"  ]; then
+  if [[ ! "$(ls --ignore .git --ignore .gitignore --ignore ${OPENNMS_DATASOURCES_CFG} --ignore ${OPENNMS_KARAF_CFG} -A ${OPENNMS_HOME}/etc)"  ]]; then
     echo "No existing configuration in ${OPENNMS_HOME}/etc found. Initialize from etc-pristine."
     cp -r ${OPENNMS_HOME}/share/etc-pristine/* ${OPENNMS_HOME}/etc/ || exit ${E_INIT_CONFIG}
   fi
@@ -73,7 +77,7 @@ initConfigWhenEmpty() {
 
 applyOverlayConfig() {
   # Overlay relative to the root of the install dir
-  if [ -d "${OPENNMS_OVERLAY}" ] && [ -n "$(ls -A ${OPENNMS_OVERLAY})" ]; then
+  if [[ -d "${OPENNMS_OVERLAY}" ]] && [[ -n "$(ls -A ${OPENNMS_OVERLAY})" ]]; then
     echo "Apply custom configuration from ${OPENNMS_OVERLAY}."
     cp -r ${OPENNMS_OVERLAY}/* ${OPENNMS_HOME}/ || exit ${E_INIT_CONFIG}
   else
@@ -99,7 +103,7 @@ start() {
 
 testConfig() {
   shift
-  if [ "${#}" == "0" ]; then
+  if [[ "${#}" == "0" ]]; then
     configTester -h
   else
     configTester "${@}"
@@ -107,24 +111,24 @@ testConfig() {
 }
 
 preflightchecks() {
-  if [ -z "${JAVA_HOME}" ]; then
+  if [[ -z "${JAVA_HOME}" ]]; then
     echo "ERROR: Environment variable JAVA_HOME is not set and is required to run."
     exit ${E_ILLEGAL_ARGS}
   fi
 
-  if [ -n "${OPENNMS_DBNAME}" ]; then
-    echo "WARNING: The OPENNMS_DBNAME is deprecated."
+  if [[ -n "${OPENNMS_DBNAME}" ]]; then
+    echo "WARNING: The OPENNMS_DBNAME is deprecated, use OPENNMS_DATABASE_NAME instead."
   fi
 
-  if [ -n "${OPENNMS_DBUSER}" ]; then
-    echo "WARNING: The OPENNMS_DBUSER is deprecated."
+  if [[ -n "${OPENNMS_DBUSER}" ]]; then
+    echo "WARNING: The OPENNMS_DBUSER is deprecated, use OPENNMS_DATABASE_USER instead."
   fi
 
-  if [ -n "${OPENNMS_DBPASS}" ]; then
-    echo "WARNING: The OPENNMS_DBPASS is deprecated."
+  if [[ -n "${OPENNMS_DBPASS}" ]]; then
+    echo "WARNING: The OPENNMS_DBPASS is deprecated, use OPENNMS_DATABASE_PASSWORD instead."
   fi
 
-  if [ -d /opennms-data ]; then
+  if [[ -d /opennms-data ]]; then
     echo "ERROR: The mount point for /opennms-data directory is deprecated."
     echo "Use the following mount points instead:"
     echo "  old mount points      -> new mount points          "
@@ -135,7 +139,7 @@ preflightchecks() {
     exit ${E_DEPRECATED_CONFIG}
   fi
 
-  if [ -d /opt/opennms-etc-overlay ]; then
+  if [[ -d /opt/opennms-etc-overlay ]]; then
     echo "ERROR: The mount point for /opt/opennms-etc-overlay directory is"
     echo "deprecated in favour of /opt/opennms-overlay."
     echo "Move your content from your etc overlay directory to"
@@ -146,7 +150,7 @@ preflightchecks() {
     exit ${E_DEPRECATED_CONFIG}
   fi
 
-  if [ -d /opt/opennms-etc-overlay ]; then
+  if [[ -d /opt/opennms-etc-overlay ]]; then
     echo "ERROR: The mount point for /opt/opennms-etc-overlay directory is"
     echo "deprecated in favour of /opt/opennms-overlay."
     echo "Move your content from your etc overlay directory to"
@@ -158,7 +162,7 @@ preflightchecks() {
     exit ${E_DEPRECATED_CONFIG}
   fi
 
-  if [ -d /opt/opennms-jetty-webinf-overlay ]; then
+  if [[ -d /opt/opennms-jetty-webinf-overlay ]]; then
     echo "ERROR: The mount point for /opt/opennms-jetty-webinf-overlay"
     echo "directory is deprecated in favour of /opt/opennms-overlay. Move your"
     echo "content from your etc overlay directory to /opt/opennms-overlay/etc"

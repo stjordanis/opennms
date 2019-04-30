@@ -15,7 +15,6 @@ SHELL ["/bin/bash", "-c"]
 # Install repositories, system and OpenNMS packages and do some cleanup
 RUN if [ "$(ls -1 /tmp/rpms/*.rpm 2>/dev/null | wc -l)" != 0 ]; then yum -y localinstall /tmp/rpms/*.rpm; else yum -y install ${SENTINEL_PACKAGES}; fi && \
     rm -rf /tmp/rpms && \
-    yum -y install ${PACKAGES} && \
     yum clean all && \
     rm -rf /var/cache/yum && \
     chown -R ${USER}:${GROUP} /opt/sentinel

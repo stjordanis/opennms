@@ -29,8 +29,8 @@ services:
       retries: 3
 
   opennms:
-    container_name: opennms
-    image: opennms/horizon-core-web:24.0.0-1
+    container_name: opennms/horizon-core-web:24.0.0
+    image: horizon
     command: [ -s ]
     depends_on:
       database:

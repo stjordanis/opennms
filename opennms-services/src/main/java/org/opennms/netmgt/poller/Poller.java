@@ -39,6 +39,7 @@ import java.util.Set;
 import org.opennms.core.criteria.Criteria;
 import org.opennms.core.criteria.restrictions.InRestriction;
 import org.opennms.core.utils.InetAddressUtils;
+import org.opennms.netmgt.collectd.ThresholdingFactory;
 import org.opennms.netmgt.collection.api.PersisterFactory;
 import org.opennms.netmgt.config.PollOutagesConfig;
 import org.opennms.netmgt.config.PollerConfig;
@@ -113,7 +114,7 @@ public class Poller extends AbstractServiceDaemon {
     private PersisterFactory m_persisterFactory;
 
     @Autowired
-    private ResourceStorageDao m_resourceStorageDao;
+    private ThresholdingFactory m_thresholdingFactory;
 
     @Autowired
     private LocationAwarePollerClient m_locationAwarePollerClient;
@@ -525,7 +526,7 @@ public class Poller extends AbstractServiceDaemon {
 
         PollableService svc = getNetwork().createService(service.getNodeId(), iface.getNode().getLabel(), iface.getNode().getLocation().getLocationName(), addr, serviceName);
         PollableServiceConfig pollConfig = new PollableServiceConfig(svc, m_pollerConfig, m_pollOutagesConfig, pkg,
-                getScheduler(), m_persisterFactory, m_resourceStorageDao, m_locationAwarePollerClient);
+                                                                     getScheduler(), m_persisterFactory, m_thresholdingFactory, m_locationAwarePollerClient);
         svc.setPollConfig(pollConfig);
         synchronized(svc) {
             if (svc.getSchedule() == null) {
@@ -669,19 +670,6 @@ public class Poller extends AbstractServiceDaemon {
             @Override
             public void visitService(PollableService service) {
                 service.refreshConfig();
-            }
-        };
-        getNetwork().visit(visitor);
-    }
-
-    /**
-     * <p>refreshServiceThresholds</p>
-     */
-    public void refreshServiceThresholds() {
-        PollableVisitor visitor = new PollableVisitorAdaptor() {
-            @Override
-            public void visitService(PollableService service) {
-                service.refreshThresholds();
             }
         };
         getNetwork().visit(visitor);

@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2008-2018 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2018 The OpenNMS Group, Inc.
+ * Copyright (C) 2019 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2019 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:craig@opennms.org">Craig Miskell</a>
  * @version $Id: $
  */
-public class ThresholdingVisitor extends AbstractCollectionSetVisitor {
+public abstract class ThresholdingVisitor extends AbstractCollectionSetVisitor {
 
     public enum ThresholdingResult {
         THRESHOLDING_UNKNOWN,

@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.opennms.core.rpc.api.RpcExceptionHandler;
 import org.opennms.core.rpc.api.RpcExceptionUtils;
+import org.opennms.netmgt.collectd.ThresholdingFactory;
 import org.opennms.netmgt.collection.api.PersisterFactory;
 import org.opennms.netmgt.config.PollOutagesConfig;
 import org.opennms.netmgt.config.PollerConfig;
@@ -81,7 +82,8 @@ public class PollableServiceConfig implements PollConfig, ScheduleInterval {
      * @param pkg a {@link org.opennms.netmgt.config.poller.Package} object.
      * @param timer a {@link org.opennms.netmgt.scheduler.Timer} object.
      */
-    public PollableServiceConfig(PollableService svc, PollerConfig pollerConfig, PollOutagesConfig pollOutagesConfig, Package pkg, Timer timer, PersisterFactory persisterFactory, ResourceStorageDao resourceStorageDao, LocationAwarePollerClient locationAwarePollerClient) {
+    public PollableServiceConfig(PollableService svc, PollerConfig pollerConfig, PollOutagesConfig pollOutagesConfig, Package pkg, Timer timer, PersisterFactory persisterFactory,
+            ThresholdingFactory thresholdingFactory, LocationAwarePollerClient locationAwarePollerClient) {
         m_service = svc;
         m_pollerConfig = pollerConfig;
         m_pollOutagesConfig = pollOutagesConfig;
@@ -89,7 +91,7 @@ public class PollableServiceConfig implements PollConfig, ScheduleInterval {
         m_timer = timer;
         m_configService = findService(pkg);
         m_locationAwarePollerClient = Objects.requireNonNull(locationAwarePollerClient);
-        m_latencyStoringServiceMonitorAdaptor = new LatencyStoringServiceMonitorAdaptor(pollerConfig, pkg, persisterFactory, resourceStorageDao);
+        m_latencyStoringServiceMonitorAdaptor = new LatencyStoringServiceMonitorAdaptor(pollerConfig, pkg, persisterFactory, thresholdingFactory);
         m_serviceMonitor = pollerConfig.getServiceMonitor(svc.getSvcName());
     }
 
@@ -177,14 +179,6 @@ public class PollableServiceConfig implements PollConfig, ScheduleInterval {
         }
         m_pkg = newPkg;
         m_configService = findService(m_pkg);
-    }
-
-    /**
-     * Should be called when thresholds configuration has been reloaded
-     */
-    @Override
-    public synchronized void refreshThresholds() {
-        m_latencyStoringServiceMonitorAdaptor.refreshThresholds();
     }
 
     private synchronized Map<String,Object> getParameters() {

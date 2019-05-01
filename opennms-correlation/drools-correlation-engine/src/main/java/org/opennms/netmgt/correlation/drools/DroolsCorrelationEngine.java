@@ -63,7 +63,6 @@ import org.opennms.netmgt.correlation.drools.config.EngineConfiguration;
 import org.opennms.netmgt.correlation.drools.config.RuleSet;
 import org.opennms.netmgt.events.api.EventConstants;
 import org.opennms.netmgt.model.events.EventBuilder;
-import org.opennms.netmgt.xml.event.AlarmData;
 import org.opennms.netmgt.xml.event.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -228,18 +227,22 @@ public class DroolsCorrelationEngine extends AbstractCorrelationEngine {
                     m_kieSession.fireUntilHalt();
                 } catch (Exception e) {
                     LOG.error("Exception while running rules, reloading engine ", e);
-                    triggerAlarm(e);
-                    reloadConfig();
+                    sendReloadEvent(e);
                 }
             }, "FireTask").start();
         }
     }
 
-    private void triggerAlarm(Exception exception) {
+    private void sendReloadEvent(Exception exception) {
+        // Trigger an alarm with the specific exception
         EventBuilder eventBldr = new EventBuilder(EventConstants.DROOLS_ENGINE_ENCOUNTERED_EXCEPTION, getName());
         eventBldr.addParam("enginename", getName());
         eventBldr.addParam("stracktrace", ExceptionUtils.getStackTrace(exception));
         sendEvent(eventBldr.getEvent());
+        // Send reload daemon event for this engine.
+        EventBuilder reloadEventBldr = new EventBuilder(EventConstants.DROOLS_ENGINE_ENCOUNTERED_EXCEPTION, getName());
+        reloadEventBldr.addParam(EventConstants.PARM_DAEMON_NAME, this.getClass().getSimpleName() + "-" + getName());
+        sendEvent(reloadEventBldr.getEvent());
     }
 
     private void loadRules(final KieFileSystem kfs) throws DroolsParserException, IOException {

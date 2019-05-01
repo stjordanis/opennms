@@ -48,6 +48,7 @@ import org.mockito.Mockito;
 import org.opennms.core.rpc.api.RequestTimedOutException;
 import org.opennms.core.test.OpenNMSJUnit4ClassRunner;
 import org.opennms.core.utils.InetAddressUtils;
+import org.opennms.netmgt.collectd.ThresholdingFactory;
 import org.opennms.netmgt.collection.api.PersisterFactory;
 import org.opennms.netmgt.config.PollOutagesConfig;
 import org.opennms.netmgt.config.PollerConfig;
@@ -97,6 +98,7 @@ public class PollableServiceConfigIT {
         IOUtils.closeQuietly(is);
 
         PersisterFactory persisterFactory = new MockPersisterFactory();
+        ThresholdingFactory thresholdingFactory = new ThresholdingFactory();
         ResourceStorageDao resourceStorageDao = new FilesystemResourceStorageDao();
 
         final PollContext context = mock(PollContext.class);
@@ -108,7 +110,7 @@ public class PollableServiceConfigIT {
         final Package pkg = factory.getPackage("MapQuest");
         final Timer timer = mock(Timer.class);
         final PollableServiceConfig psc = new PollableServiceConfig(svc, factory, pollOutagesConfig, pkg, timer,
-                persisterFactory, resourceStorageDao, m_locationAwarePollerClient);
+                persisterFactory, thresholdingFactory, m_locationAwarePollerClient);
         PollStatus pollStatus = psc.poll();
         assertThat(pollStatus.getReason(), not(containsString("Unexpected exception")));
     }
@@ -153,11 +155,11 @@ public class PollableServiceConfigIT {
         PollOutagesConfig pollOutagesConfig = mock(PollOutagesConfig.class);
         Timer timer = mock(Timer.class);
         PersisterFactory persisterFactory = mock(PersisterFactory.class);
-        ResourceStorageDao resourceStorageDao = mock(ResourceStorageDao.class);
+        ThresholdingFactory thresholdingFactory = mock(ThresholdingFactory.class);
 
         final PollableServiceConfig psc = new PollableServiceConfig(pollableSvc, pollerConfig,
                 pollOutagesConfig, pkg, timer,
-                persisterFactory, resourceStorageDao, client);
+                persisterFactory, thresholdingFactory, client);
 
         // Trigger the poll
         PollStatus pollStatus = psc.poll();

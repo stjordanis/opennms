@@ -52,6 +52,7 @@ import org.opennms.core.test.OpenNMSJUnit4ClassRunner;
 import org.opennms.core.test.db.MockDatabase;
 import org.opennms.core.test.db.TemporaryDatabaseAware;
 import org.opennms.core.test.db.annotations.JUnitTemporaryDatabase;
+import org.opennms.netmgt.collectd.ThresholdingFactory;
 import org.opennms.netmgt.collection.api.PersisterFactory;
 import org.opennms.netmgt.config.PollOutagesConfigFactory;
 import org.opennms.netmgt.config.PollerConfig;
@@ -102,6 +103,9 @@ public class LatencyStoringServiceMonitorAdaptorIT implements TemporaryDatabaseA
 
     @Autowired
     private PersisterFactory m_persisterFactory;
+
+    @Autowired
+    private ThresholdingFactory m_thresholdingFactory;
 
     @Autowired
     private ResourceStorageDao m_resourceStorageDao;
@@ -241,7 +245,7 @@ public class LatencyStoringServiceMonitorAdaptorIT implements TemporaryDatabaseA
         expect(m_pollerConfig.getStep(pkg)).andReturn(step).anyTimes();
 
         m_mocks.replayAll();
-        LatencyStoringServiceMonitorAdaptor adaptor = new LatencyStoringServiceMonitorAdaptor(m_pollerConfig, pkg, m_persisterFactory, m_resourceStorageDao);
+        LatencyStoringServiceMonitorAdaptor adaptor = new LatencyStoringServiceMonitorAdaptor(m_pollerConfig, pkg, m_persisterFactory, m_thresholdingFactory);
         // Make sure that the ThresholdingSet initializes with test settings
         String previousOpennmsHome = System.setProperty("opennms.home", "src/test/resources");
         for (int i=0; i<rtValues.length; i++) {

@@ -231,6 +231,7 @@ public class CollectableServiceTest {
         PlatformTransactionManager transMgr = mock(PlatformTransactionManager.class);
         RrdPersisterFactory persisterFactory = new RrdPersisterFactory();
         persisterFactory.setRrdStrategy(rrdStrategy);
+        ThresholdingFactory thresholdingFactory = new ThresholdingFactory();
         ResourceStorageDao resourceStorageDao = mock(ResourceStorageDao.class);
 
         // Disable thresholding
@@ -244,7 +245,7 @@ public class CollectableServiceTest {
         when(ifaceDao.load(any())).thenReturn(iface);
         when(iface.getIpAddress()).thenReturn(InetAddrUtils.getLocalHostAddress());
 
-        service = new CollectableService(iface, ifaceDao, spec, scheduler, schedulingCompletedFlag, transMgr, persisterFactory, resourceStorageDao);
+        service = new CollectableService(iface, ifaceDao, spec, scheduler, schedulingCompletedFlag, transMgr, persisterFactory, thresholdingFactory, resourceStorageDao);
     }
 
     private RrdRepository createRrdRepository() throws IOException {

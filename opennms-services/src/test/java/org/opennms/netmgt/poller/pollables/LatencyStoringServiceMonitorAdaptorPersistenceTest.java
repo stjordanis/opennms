@@ -42,7 +42,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.opennms.core.test.MockLogAppender;
-import org.opennms.netmgt.collectd.ThresholdingFactory;
 import org.opennms.netmgt.collection.persistence.rrd.RrdPersisterFactory;
 import org.opennms.netmgt.config.poller.Package;
 import org.opennms.netmgt.dao.api.MonitoringLocationDao;
@@ -55,6 +54,7 @@ import org.opennms.netmgt.poller.ServiceMonitor;
 import org.opennms.netmgt.poller.mock.MockMonitoredService;
 import org.opennms.netmgt.poller.support.AbstractServiceMonitor;
 import org.opennms.netmgt.rrd.RrdStrategy;
+import org.opennms.netmgt.threshd.ThresholdingFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

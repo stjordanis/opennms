@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.opennms.core.utils.ParameterMap;
-import org.opennms.netmgt.collectd.ThresholdingFactory;
 import org.opennms.netmgt.collection.api.CollectionSetVisitor;
 import org.opennms.netmgt.collection.api.CollectionStatus;
 import org.opennms.netmgt.collection.api.PersisterFactory;
@@ -52,6 +51,7 @@ import org.opennms.netmgt.poller.MonitoredService;
 import org.opennms.netmgt.poller.PollStatus;
 import org.opennms.netmgt.poller.ServiceMonitorAdaptor;
 import org.opennms.netmgt.rrd.RrdRepository;
+import org.opennms.netmgt.threshd.ThresholdingFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

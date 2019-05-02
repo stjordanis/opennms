@@ -1,7 +1,7 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2009-2018 The OpenNMS Group, Inc.
+ * Copyright (C) 2018 The OpenNMS Group, Inc.
  * OpenNMS(R) is Copyright (C) 1999-2018 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
@@ -28,28 +28,27 @@
 
 package org.opennms.netmgt.threshd;
 
-import org.opennms.netmgt.dao.api.ResourceStorageDao;
-import org.opennms.netmgt.rrd.RrdRepository;
+public class ThresholdInitializationException extends Exception {
+    private static final long serialVersionUID = 1L;
 
-/**
- * <p>LatencyThresholdingSet class.</p>
- *
- * @author <a href="mailto:agalue@opennms.org">Alejandro Galue</a>
- * @version $Id: $
- */
-public interface LatencyThresholdingSet extends ThresholdingSet {
+    public ThresholdInitializationException() {
+        super();
+    }
 
-    /**
-     * <p>Constructor for LatencyThresholdingSet.</p>
-     *
-     * @param nodeId a int.
-     * @param hostAddress a {@link java.lang.String} object.
-     * @param serviceName a {@link java.lang.String} object.
-     * @param repository a {@link org.opennms.netmgt.rrd.RrdRepository} object.
-     * @param interval a long.
-     * @throws ThresholdInitializationException 
-     */
-    LatencyThresholdingSet create(int nodeId, String hostAddress, String serviceName, String location, RrdRepository repository, ResourceStorageDao resourceStorageDao)
-            throws ThresholdInitializationException;
+    public ThresholdInitializationException(final String message) {
+        super(message);
+    }
+
+    public ThresholdInitializationException(final Throwable cause) {
+        super(cause);
+    }
+
+    public ThresholdInitializationException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
+    public ThresholdInitializationException(final String message, final Throwable cause, final boolean enableSuppression, final boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 
 }

@@ -39,8 +39,8 @@ import org.opennms.netmgt.collection.api.AttributeGroup;
 import org.opennms.netmgt.collection.api.CollectionAttribute;
 import org.opennms.netmgt.collection.api.CollectionResource;
 import org.opennms.netmgt.collection.api.CollectionSet;
+import org.opennms.netmgt.collection.api.CollectionSetVisitor;
 import org.opennms.netmgt.collection.api.ServiceParameters;
-import org.opennms.netmgt.collection.support.AbstractCollectionSetVisitor;
 import org.opennms.netmgt.dao.api.ResourceStorageDao;
 import org.opennms.netmgt.rrd.RrdRepository;
 import org.opennms.netmgt.xml.event.Event;
@@ -64,13 +64,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:craig@opennms.org">Craig Miskell</a>
  * @version $Id: $
  */
-public abstract class ThresholdingVisitor extends AbstractCollectionSetVisitor {
-
-    public enum ThresholdingResult {
-        THRESHOLDING_UNKNOWN,
-        THRESHOLDING_SUCCEEDED,
-        THRESHOLDING_FAILED
-    }
+public class ThresholdingVisitor implements CollectionSetVisitor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ThresholdingVisitor.class);
 
@@ -215,6 +209,30 @@ public abstract class ThresholdingVisitor extends AbstractCollectionSetVisitor {
     @Override
     public String toString() {
         return "ThresholdingVisitor for " + m_thresholdingSet;
+    }
+
+    @Override
+    public void visitGroup(AttributeGroup group) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void completeAttribute(CollectionAttribute attribute) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void completeGroup(AttributeGroup group) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void completeCollectionSet(CollectionSet set) {
+        // TODO Auto-generated method stub
+
     }
     
 }

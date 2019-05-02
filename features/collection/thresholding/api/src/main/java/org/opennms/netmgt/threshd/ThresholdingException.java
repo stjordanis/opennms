@@ -28,8 +28,6 @@
 
 package org.opennms.netmgt.threshd;
 
-import org.opennms.netmgt.threshd.ThresholdingVisitor.ThresholdingResult;
-
 /**
  * <p>ThresholdingException class.</p>
  *

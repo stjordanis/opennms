@@ -36,10 +36,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.opennms.netmgt.collection.api.CollectionAttribute;
+import org.opennms.netmgt.collection.api.CollectionAttributeType;
+import org.opennms.netmgt.collection.api.CollectionResource;
 import org.opennms.netmgt.dao.api.ResourceStorageDao;
-import org.opennms.netmgt.poller.LatencyCollectionAttribute;
-import org.opennms.netmgt.poller.LatencyCollectionAttributeType;
-import org.opennms.netmgt.poller.LatencyCollectionResource;
 import org.opennms.netmgt.rrd.RrdRepository;
 import org.opennms.netmgt.xml.event.Event;
 
@@ -49,7 +48,7 @@ import org.opennms.netmgt.xml.event.Event;
  * @author <a href="mailto:agalue@opennms.org">Alejandro Galue</a>
  * @version $Id: $
  */
-public class LatencyThresholdingSetImpl extends ThresholdingSet implements LatencyThresholdingSet
+public class LatencyThresholdingSetImpl extends ThresholdingSetImpl implements LatencyThresholdingSet
 {
 
     private final String m_location;
@@ -97,13 +96,15 @@ public class LatencyThresholdingSetImpl extends ThresholdingSet implements Laten
      */
     /** {@inheritDoc} */
     public List<Event> applyThresholds(String svcName, Map<String, Double> attributes) {
-        LatencyCollectionResource latencyResource = new LatencyCollectionResource(svcName, m_hostAddress, m_location);
-        LatencyCollectionAttributeType latencyType = new LatencyCollectionAttributeType();
+        CollectionResource latencyResource = null; // TODO - pass these in
+        Map<String, CollectionAttribute> attributesMap = null; // TODO - pass in this map
+        /*CollectionResource latencyResource = new CollectionResource(svcName, m_hostAddress, m_location);
+        CollectionAttributeType latencyType = new CollectionAttributeType();
         Map<String, CollectionAttribute> attributesMap = new HashMap<String, CollectionAttribute>();
         for (final Entry<String, Double> entry : attributes.entrySet()) {
             final String ds = entry.getKey();
             attributesMap.put(ds, new LatencyCollectionAttribute(latencyResource, latencyType, ds, entry.getValue()));
-        }
+        }*/
         //The timestamp is irrelevant; latency is never a COUNTER (which is the only reason the date is used).  
         //Yes, we have to know a little too much about the implementation details of CollectionResourceWrapper to say that, but
         // we have little choice
@@ -114,7 +115,6 @@ public class LatencyThresholdingSetImpl extends ThresholdingSet implements Laten
     /*
      * Resource Filters don't make sense for Latency Thresholder.
      */
-    /** {@inheritDoc} */
     @Override
     protected boolean passedThresholdFilters(CollectionResourceWrapper resource, ThresholdEntity thresholdEntity) {
         return true;

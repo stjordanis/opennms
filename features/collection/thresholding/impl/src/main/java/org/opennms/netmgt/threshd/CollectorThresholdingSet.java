@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:agalue@opennms.org">Alejandro Galue</a>
  * @version $Id: $
  */
-public class CollectorThresholdingSet extends ThresholdingSet {
+public class CollectorThresholdingSet extends ThresholdingSetImpl {
     private static final Logger LOG = LoggerFactory.getLogger(CollectorThresholdingSet.class);
 
     private final ResourceStorageDao m_resourceStorageDao;
@@ -93,8 +93,8 @@ public class CollectorThresholdingSet extends ThresholdingSet {
         CollectionResource resource = attribute.getResource();
         if (!isCollectionEnabled(attribute.getResource()))
             return false;
-        if (resource instanceof AliasedResource && !storeByIfAlias)
-            return false;
+        // if (resource instanceof AliasedResource && !storeByIfAlias)
+        // return false;
         return hasThresholds(resource.getResourceTypeName(), attribute.getName());
     }
 

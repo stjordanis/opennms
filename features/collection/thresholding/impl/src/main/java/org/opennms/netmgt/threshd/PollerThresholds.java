@@ -33,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.opennms.netmgt.dao.api.ResourceStorageDao;
 import org.opennms.netmgt.poller.MonitoredService;
 import org.opennms.netmgt.rrd.RrdRepository;
 import org.opennms.netmgt.xml.event.Event;
@@ -50,7 +51,7 @@ public class PollerThresholds {
 
     private static LatencyThresholdingSetImpl m_thresholdingSet;
 
-    private static Object m_resourceStorageDao;
+    private static ResourceStorageDao m_resourceStorageDao; // TODO where should this best come from?
 
     public void applyThresholds(String rrdPath, MonitoredService service, String dsName, Map<String, Number> entries) {
         try {

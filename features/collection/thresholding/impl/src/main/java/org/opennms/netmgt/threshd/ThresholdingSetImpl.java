@@ -64,9 +64,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:agalue@opennms.org">Alejandro Galue</a>
  */
-public class ThresholdingSet {
+public class ThresholdingSetImpl {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ThresholdingSet.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ThresholdingSetImpl.class);
 
     protected final int m_nodeId;
     protected final String m_hostAddress;
@@ -91,7 +91,7 @@ public class ThresholdingSet {
      * @param interval a long.
      * @throws ThresholdInitializationException 
      */
-    public ThresholdingSet(int nodeId, String hostAddress, String serviceName, RrdRepository repository) throws ThresholdInitializationException {
+    public ThresholdingSetImpl(int nodeId, String hostAddress, String serviceName, RrdRepository repository) throws ThresholdInitializationException {
         m_nodeId = nodeId;
         m_hostAddress = (hostAddress == null ? null : hostAddress.intern());
         m_serviceName = (serviceName == null ? null : serviceName.intern());

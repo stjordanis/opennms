@@ -42,7 +42,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.camel.component.netty4.util.SubnetUtils;
 import org.opennms.netmgt.dao.api.NodeDao;
 import org.opennms.netmgt.dao.api.SnmpInterfaceDao;
 import org.opennms.netmgt.flows.api.ConversationKey;
@@ -326,6 +328,23 @@ public class ElasticFlowRepository implements FlowRepository {
     public CompletableFuture<Table<Directional<ConversationKey>, Long, Double>> getTopNConversationsSeries(int N, long step, List<Filter> filters) {
         return getSeriesFromTopN(N, step, "netflow.convo_key", null, false, filters)
                 .thenApply((res) -> mapTable(res, (key) -> ConversationKeyUtils.fromJsonString(key)));
+    }
+
+    @Override
+    public CompletableFuture<List<String>> getHosts(String cidr, long limit, List<Filter> filters) {
+        // Will throw an IllegalArgumentException if the cidr is invalid
+        new SubnetUtils(cidr);
+
+        final String srcQuery = searchQueryProvider.getHostsQuery(cidr, limit, true, filters);
+        final String dstQuery = searchQueryProvider.getHostsQuery(cidr, limit, false, filters);
+        return searchAsync(srcQuery, extractTimeRangeFilter(filters)).thenApply(res -> processGroupedByResult(res,
+                limit)).thenCompose(srcResult ->
+                searchAsync(dstQuery, extractTimeRangeFilter(filters)).thenApply(res -> processGroupedByResult(res,
+                        limit)).thenApply(dstResult ->
+                        // Take the list of source hosts and combine it with the list of destination hosts dropping
+                        // duplicates
+                        Stream.concat(srcResult.stream(), dstResult.stream()).distinct().collect(Collectors.toList())
+                ));
     }
 
     private CompletableFuture<List<String>> getTopN(int N, String groupByTerm, String keyForMissingTerm, List<Filter> filters) {

@@ -164,8 +164,20 @@ public class SearchQueryProvider implements FilterVisitor<String> {
         return render("aggregate_by_fuzzed_field.ftl", ImmutableMap.builder()
                 .put("filters", getFilterQueries(filters))
                 .put("N", limit)
-                .put("field", "netflow.application")
+                .put("fields", "netflow.application")
                 .put("prefix", prefix)
+                .build());
+    }
+
+    public String getHostsQuery(String cidr, long limit, boolean isSrc, List<Filter> filters) {
+        Objects.requireNonNull(cidr);
+        Objects.requireNonNull(filters);
+
+        return render("aggregate_by_hosts.ftl", ImmutableMap.builder()
+                .put("filters", getFilterQueries(filters))
+                .put("N", limit)
+                .put("field", isSrc ? "netflow.src_addr" : "netflow.dst_addr")
+                .put("cidr", cidr)
                 .build());
     }
 

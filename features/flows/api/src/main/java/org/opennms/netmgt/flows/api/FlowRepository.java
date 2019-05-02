@@ -54,4 +54,5 @@ public interface FlowRepository {
 
     CompletableFuture<Table<Directional<ConversationKey>, Long, Double>> getTopNConversationsSeries(int N, long step, List<Filter> filters);
 
+    CompletableFuture<List<String>> getHosts(String cidr, long limit, List<Filter> filters);
 }

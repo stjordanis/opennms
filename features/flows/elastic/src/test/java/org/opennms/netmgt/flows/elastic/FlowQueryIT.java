@@ -286,6 +286,22 @@ public class FlowQueryIT {
         verifyHttpsSeries(appTraffic);
     }
 
+    @Test
+    public void canGetHosts() throws ExecutionException, InterruptedException, FlowException {
+        // Get only the first host
+        List<String> hosts = flowRepository.getHosts("0.0.0.0/0", 1, getFilters()).get();
+        assertThat(hosts, equalTo(Collections.singletonList("10.1.1.11")));
+
+        // Get all hosts
+        hosts = flowRepository.getHosts("0.0.0.0/0", 10, getFilters()).get();
+        assertThat(hosts, equalTo(Arrays.asList("10.1.1.11", "10.1.1.12", "10.1.1.13", "192.168.1.100",
+                "192.168.1.101", "192.168.1.102")));
+
+        // Get the first N hosts with a prefix
+        hosts = flowRepository.getHosts("10.1.1.0/24", 10, getFilters()).get();
+        assertThat(hosts, equalTo(Arrays.asList("10.1.1.11", "10.1.1.12", "10.1.1.13")));
+    }
+
     private void verifyHttpsSeries(Table<Directional<String>, Long, Double> appTraffic) {
         // Pull the values from the table into arrays for easy comparision and validate
         List<Long> timestamps = getTimestampsFrom(appTraffic);

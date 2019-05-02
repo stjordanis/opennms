@@ -147,4 +147,19 @@ public interface FlowRestService {
     @Path("flowGraphUrl")
     FlowGraphUrlInfo getFlowGraphUrlInfo(@Context final UriInfo uriInfo);
 
+    /**
+     * Retrieve the list of hosts.
+     *
+     * Supports filtering.
+     *
+     * @param cidr a CIDR used to filter results in the format of A.B.C.D/Z for IPv4 or A:B::/Z for IPv6
+     * @param limit the maximum number of applications to return
+     * @return the list of applications
+     */
+    @GET
+    @Path("hosts")
+    @Produces(MediaType.APPLICATION_JSON)
+    List<String> getHosts(@DefaultValue("") @QueryParam("cidr") final String cidr,
+                                 @DefaultValue(DEFAULT_LIMIT) @QueryParam("limit") final long limit,
+                                 @Context UriInfo uriInfo);
 }

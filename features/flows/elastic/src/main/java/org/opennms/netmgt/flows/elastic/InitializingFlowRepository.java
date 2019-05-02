@@ -114,6 +114,11 @@ public class InitializingFlowRepository implements FlowRepository {
         return delegate.getTopNConversationsSeries(N, step, filters);
     }
 
+    @Override
+    public CompletableFuture<List<String>> getHosts(String cidr, long limit, List<Filter> filters) {
+        return delegate.getHosts(cidr, limit, filters);
+    }
+
     private void ensureInitialized() {
         if (!initializer.isInitialized()) {
             initializer.initialize();

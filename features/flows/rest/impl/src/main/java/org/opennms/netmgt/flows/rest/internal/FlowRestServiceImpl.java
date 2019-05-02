@@ -225,6 +225,17 @@ public class FlowRestServiceImpl implements FlowRestService {
         return response;
     }
 
+    @Override
+    public List<String> getHosts(String cidr, long limit, UriInfo uriInfo) {
+        final List<Filter> filters = getFiltersFromQueryString(uriInfo.getQueryParameters());
+        try {
+            return waitForFuture(flowRepository.getHosts(cidr, limit, filters));
+        } catch (IllegalArgumentException e) {
+            throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).type(MediaType.TEXT_PLAIN)
+                    .entity("Invalid CIDR: " + e.getMessage()).build());
+        }
+    }
+
     protected static List<Filter> getFiltersFromQueryString(MultivaluedMap<String, String> queryParams) {
         final List<Filter> filters = new ArrayList<>();
 

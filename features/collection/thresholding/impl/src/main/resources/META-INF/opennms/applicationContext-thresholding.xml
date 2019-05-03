@@ -14,8 +14,8 @@
     <context:annotation-config />
     <tx:annotation-driven/>
 
-    <bean id="thresholdingFactory" class="org.opennms.features.collection.persistence.osgi.OsgiPersisterFactory" />
-    <onmsgi:service interface="org.opennms.netmgt.collection.thresholding.api.ThresholdingFactory" ref="thresholdingFactory" />
+    <bean id="thresholdingFactory" class="org.opennms.netmgt.threshd.ThresholdingFactoryImpl" />
+    <onmsgi:service interface="org.opennms.netmgt.threshd.ThresholdingFactory" ref="thresholdingFactory" />
 
 </beans>
 

@@ -58,6 +58,7 @@ import org.opennms.core.logging.Logging;
 import org.opennms.core.logging.Logging.MDCCloseable;
 import org.opennms.core.tracing.api.TracerRegistry;
 import org.opennms.core.tracing.util.TracingInfoCarrier;
+import org.opennms.distributed.core.api.MinionIdentity;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.slf4j.Logger;
@@ -80,6 +81,8 @@ public class KafkaRemoteMessageDispatcherFactory extends AbstractMessageDispatch
     private KafkaProducer<String, byte[]> producer;
 
     private TracerRegistry tracerRegistry;
+
+    private MinionIdentity minionIdentity;
 
     private int maxBufferSize;
 
@@ -122,7 +125,6 @@ public class KafkaRemoteMessageDispatcherFactory extends AbstractMessageDispatch
                         }
                     }
                 }
-                tracer.activeSpan().finish();
             }
         }
     }
@@ -138,7 +140,9 @@ public class KafkaRemoteMessageDispatcherFactory extends AbstractMessageDispatch
                 .setContent(byteString);
         // Add tracing info
         TracingInfoCarrier tracingInfoCarrier = new TracingInfoCarrier();
-        tracer.inject(tracer.activeSpan().context(), Format.Builtin.TEXT_MAP, tracingInfoCarrier);
+        if (tracer.activeSpan() != null) {
+            tracer.inject(tracer.activeSpan().context(), Format.Builtin.TEXT_MAP, tracingInfoCarrier);
+        }
         tracingInfoCarrier.getTracingInfoMap().forEach((key, value) -> {
             SinkMessageProtos.TracingInfo tracingInfo = SinkMessageProtos.TracingInfo.newBuilder()
                     .setKey(key).setValue(value).build();
@@ -160,9 +164,10 @@ public class KafkaRemoteMessageDispatcherFactory extends AbstractMessageDispatch
             LOG.info("KafkaRemoteMessageDispatcherFactory: initializing the Kafka producer with: {}", kafkaConfig);
             producer = Utils.runWithGivenClassLoader(() -> new KafkaProducer<>(kafkaConfig), KafkaProducer.class.getClassLoader());
             maxBufferSize = getMaxBufferSize();
-            //TODO: Instrument minionId
-            tracerRegistry.init("minion");
-            tracer = tracerRegistry.getTracer();
+            if (tracerRegistry != null && minionIdentity != null) {
+                tracerRegistry.init(minionIdentity.getLocation() + "@" + minionIdentity.getId());
+                tracer = tracerRegistry.getTracer();
+            }
             onInit();
         }
     }
@@ -216,4 +221,19 @@ public class KafkaRemoteMessageDispatcherFactory extends AbstractMessageDispatch
         return Math.min(DEFAULT_MAX_BUFFER_SIZE, maxBufferSize);
     }
 
+    public void setTracerRegistry(TracerRegistry tracerRegistry) {
+        this.tracerRegistry = tracerRegistry;
+    }
+
+    public TracerRegistry getTracerRegistry() {
+        return tracerRegistry;
+    }
+
+    public MinionIdentity getMinionIdentity() {
+        return minionIdentity;
+    }
+
+    public void setMinionIdentity(MinionIdentity minionIdentity) {
+        this.minionIdentity = minionIdentity;
+    }
 }

@@ -43,6 +43,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.opennms.core.tracing.api.TracerRegistry;
+import org.opennms.distributed.core.api.Identity;
 import org.opennms.netmgt.dao.api.NodeDao;
 import org.opennms.netmgt.dao.api.SnmpInterfaceDao;
 import org.opennms.netmgt.flows.api.ConversationKey;
@@ -53,9 +55,6 @@ import org.opennms.netmgt.flows.api.FlowRepository;
 import org.opennms.netmgt.flows.api.FlowSource;
 import org.opennms.netmgt.flows.api.TrafficSummary;
 import org.opennms.netmgt.flows.classification.ClassificationEngine;
-import org.opennms.netmgt.flows.classification.ClassificationRequest;
-import org.opennms.netmgt.flows.classification.persistence.api.Protocol;
-import org.opennms.netmgt.flows.classification.persistence.api.Protocols;
 import org.opennms.netmgt.flows.filter.api.Filter;
 import org.opennms.netmgt.flows.filter.api.TimeRangeFilter;
 import org.opennms.netmgt.model.OnmsNode;
@@ -79,6 +78,9 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 
+import io.opentracing.Scope;
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import io.searchbox.action.Action;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
@@ -148,6 +150,12 @@ public class ElasticFlowRepository implements FlowRepository {
     private final NodeDao nodeDao;
     private final SnmpInterfaceDao snmpInterfaceDao;
 
+    // An OpenNMS or Sentinel Identity.
+    private Identity identity;
+    private TracerRegistry tracerRegistry;
+    //Default No-op tracer but should get overriden when actual tracer is available.
+    private Tracer tracer = GlobalTracer.get();
+
     /**
      * Cache for marking nodes and interfaces as having flows.
      *
@@ -215,7 +223,7 @@ public class ElasticFlowRepository implements FlowRepository {
         }
 
         LOG.debug("Persisting {} flow documents.", flowDocuments.size());
-        try (final Timer.Context ctx = logPersistingTimer.time()) {
+        try (final Timer.Context ctx = logPersistingTimer.time(); Scope scope = tracer.buildSpan("ElasticFlow").startActive(true)) {
             final BulkRequest<FlowDocument> bulkRequest = new BulkRequest<>(client, flowDocuments, (documents) -> {
                 final Bulk.Builder bulkBuilder = new Bulk.Builder();
                 for (FlowDocument flowDocument : documents) {
@@ -641,4 +649,28 @@ public class ElasticFlowRepository implements FlowRepository {
             throw new IllegalArgumentException("Unknown direction value: " + directionAsString);
         }
     }
+
+    public Identity getIdentity() {
+        return identity;
+    }
+
+    public void setIdentity(Identity identity) {
+        this.identity = identity;
+    }
+
+    public TracerRegistry getTracerRegistry() {
+        return tracerRegistry;
+    }
+
+    public void setTracerRegistry(TracerRegistry tracerRegistry) {
+        this.tracerRegistry = tracerRegistry;
+    }
+
+    public void start() {
+        if (tracerRegistry != null && identity != null) {
+            tracerRegistry.init(identity.getId());
+            tracer = tracerRegistry.getTracer();
+        }
+    }
+
 }

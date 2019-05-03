@@ -45,6 +45,9 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
+
 public abstract class AbstractMessageConsumerManager implements MessageConsumerManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractMessageConsumerManager.class);
@@ -52,6 +55,8 @@ public abstract class AbstractMessageConsumerManager implements MessageConsumerM
     public static final String SINK_INITIAL_SLEEP_TIME = "org.opennms.core.ipc.sink.initialSleepTime";
 
     private final Multimap<SinkModule<?, Message>, MessageConsumer<?, Message>> consumersByModule = LinkedListMultimap.create();
+
+    protected Tracer tracer = GlobalTracer.get();
 
     protected abstract void startConsumingForModule(SinkModule<?, Message> module) throws Exception;
 

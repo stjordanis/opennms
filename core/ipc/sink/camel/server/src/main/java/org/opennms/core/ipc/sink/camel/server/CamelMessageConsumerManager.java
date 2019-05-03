@@ -40,8 +40,13 @@ import org.opennms.core.ipc.sink.api.Message;
 import org.opennms.core.ipc.sink.api.SinkModule;
 import org.opennms.core.ipc.sink.camel.CamelSinkConstants;
 import org.opennms.core.ipc.sink.common.AbstractMessageConsumerManager;
+import org.opennms.core.tracing.api.TracerRegistry;
+import org.opennms.distributed.core.api.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import io.opentracing.Tracer;
 
 /**
  * Automatically creates routes to consume from the JMS queues.
@@ -56,6 +61,11 @@ public class CamelMessageConsumerManager extends AbstractMessageConsumerManager 
 
     private final Map<SinkModule<?, Message>, String> routeIdsByModule = new ConcurrentHashMap<>();
 
+    @Autowired
+    private TracerRegistry tracerRegistry;
+
+    private Identity identity;
+
     public CamelMessageConsumerManager(CamelContext context) throws Exception {
         this.context = Objects.requireNonNull(context);
         context.start();
@@ -65,7 +75,7 @@ public class CamelMessageConsumerManager extends AbstractMessageConsumerManager 
     protected synchronized void startConsumingForModule(SinkModule<?, Message> module) throws Exception {
         if (!routeIdsByModule.containsKey(module)) {
             LOG.info("Creating route for module: {}", module);
-            final DynamicIpcRouteBuilder routeBuilder = new DynamicIpcRouteBuilder(context, this, module);
+            final DynamicIpcRouteBuilder routeBuilder = new DynamicIpcRouteBuilder(context, this, module, tracer);
             context.addRoutes(routeBuilder);
             routeIdsByModule.put(module, routeBuilder.getRouteId());
         }
@@ -81,14 +91,31 @@ public class CamelMessageConsumerManager extends AbstractMessageConsumerManager 
         }
     }
 
+    public void setTracerRegistry(TracerRegistry tracerRegistry) {
+        this.tracerRegistry = tracerRegistry;
+    }
+
+    public void setIdentity(Identity identity) {
+        this.identity = identity;
+    }
+
+    public void start() {
+        if (tracerRegistry != null && identity != null) {
+            tracerRegistry.init(identity.getId());
+            tracer = tracerRegistry.getTracer();
+        }
+    }
+
     private static final class DynamicIpcRouteBuilder extends RouteBuilder {
         private final CamelMessageConsumerManager consumerManager;
         private final SinkModule<?, Message> module;
+        private final Tracer tracer;
 
-        private DynamicIpcRouteBuilder(CamelContext context, CamelMessageConsumerManager consumerManager, SinkModule<?, Message> module) {
+        private DynamicIpcRouteBuilder(CamelContext context, CamelMessageConsumerManager consumerManager, SinkModule<?, Message> module, Tracer tracer) {
             super(context);
             this.consumerManager = consumerManager;
             this.module = module;
+            this.tracer = tracer;
         }
 
         public String getRouteId() {
@@ -104,7 +131,7 @@ public class CamelMessageConsumerManager extends AbstractMessageConsumerManager 
                     CamelSinkConstants.JMS_QUEUE_PREFIX, module.getId());
             from(String.format("queuingservice:%s?concurrentConsumers=%d", queueNameFactory.getName(), numberConsumerThrads))
                 .setExchangePattern(ExchangePattern.InOnly)
-                .process(new CamelSinkServerProcessor(consumerManager, module))
+                .process(new CamelSinkServerProcessor(consumerManager, module, tracer))
                 .routeId(getRouteId());
         }
     }

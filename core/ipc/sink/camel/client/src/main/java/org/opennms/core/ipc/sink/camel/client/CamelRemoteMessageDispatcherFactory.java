@@ -28,6 +28,8 @@
 
 package org.opennms.core.ipc.sink.camel.client;
 
+import static org.opennms.core.ipc.sink.camel.CamelSinkConstants.JMS_SINK_TRACING_INFO;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,9 +42,13 @@ import org.opennms.core.ipc.sink.api.Message;
 import org.opennms.core.ipc.sink.api.SinkModule;
 import org.opennms.core.ipc.sink.camel.CamelSinkConstants;
 import org.opennms.core.ipc.sink.common.AbstractMessageDispatcherFactory;
+import org.opennms.core.tracing.api.TracerRegistry;
+import org.opennms.core.tracing.util.TracingInfoCarrier;
+import org.opennms.distributed.core.api.MinionIdentity;
 import org.osgi.framework.BundleContext;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import com.codahale.metrics.JmxReporter;
+import io.opentracing.propagation.Format;
 
 /**
  * Message dispatcher that sends messages via JMS.
@@ -59,6 +65,11 @@ public class CamelRemoteMessageDispatcherFactory extends AbstractMessageDispatch
 
     private BundleContext bundleContext;
 
+    @Autowired
+    private TracerRegistry tracerRegistry;
+
+    private MinionIdentity minionIdentity;
+
     public <S extends Message, T extends Message> Map<String, Object> getModuleMetadata(SinkModule<S, T> module) {
         // Pre-compute the JMS headers instead of recomputing them every dispatch
         final JmsQueueNameFactory queueNameFactory = new JmsQueueNameFactory(
@@ -70,6 +81,15 @@ public class CamelRemoteMessageDispatcherFactory extends AbstractMessageDispatch
 
     @Override
     public <S extends Message, T extends Message> void dispatch(SinkModule<S, T> module, Map<String, Object> headers, T message) {
+        // Add tracing info to jms headers
+        if (tracer.activeSpan() != null) {
+            TracingInfoCarrier tracingInfoCarrier = new TracingInfoCarrier();
+            tracer.inject(tracer.activeSpan().context(), Format.Builtin.TEXT_MAP, tracingInfoCarrier);
+            String tracingInfo = TracingInfoCarrier.marshalTracingInfo(tracingInfoCarrier.getTracingInfoMap());
+            if (tracingInfo != null) {
+                headers.put(JMS_SINK_TRACING_INFO, tracingInfo);
+            }
+        }
         template.sendBodyAndHeaders(endpoint, module.marshal((T)message), headers);
     }
 
@@ -84,6 +104,10 @@ public class CamelRemoteMessageDispatcherFactory extends AbstractMessageDispatch
     }
 
     public void init() {
+        if (tracerRegistry != null && minionIdentity != null) {
+            tracerRegistry.init(minionIdentity.getLocation() + "@" + minionIdentity.getId());
+            tracer = tracerRegistry.getTracer();
+        }
         onInit();
     }
 
@@ -93,5 +117,21 @@ public class CamelRemoteMessageDispatcherFactory extends AbstractMessageDispatch
 
     public void setBundleContext(BundleContext bundleContext) {
         this.bundleContext = bundleContext;
+    }
+
+    public TracerRegistry getTracerRegistry() {
+        return tracerRegistry;
+    }
+
+    public void setTracerRegistry(TracerRegistry tracerRegistry) {
+        this.tracerRegistry = tracerRegistry;
+    }
+
+    public MinionIdentity getMinionIdentity() {
+        return minionIdentity;
+    }
+
+    public void setMinionIdentity(MinionIdentity minionIdentity) {
+        this.minionIdentity = minionIdentity;
     }
 }

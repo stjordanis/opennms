@@ -26,19 +26,16 @@
  *     http://www.opennms.com/
  *******************************************************************************/
 
-package org.opennms.netmgt.threshd;
+package org.opennms.netmgt.mock;
 
 import org.opennms.netmgt.collection.api.CollectionSetVisitor;
+import org.opennms.netmgt.threshd.ThresholdingFactory;
 
-/**
- * TEMP CLASS for API seam to Thresholding service.
- * This class will move to features/collection/thresholding/api
- */
-public class ThresholdingFactoryImpl implements ThresholdingFactory {
+public class MockThresholdingFactory implements ThresholdingFactory {
 
+    @Override
     public CollectionSetVisitor createThresholder() {
-        // FIXME - pass through CollectorThresholdingSet
-        return new ThresholdingVisitor(null);
+        return new MockThresholder();
     }
-    
+
 }

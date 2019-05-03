@@ -48,15 +48,13 @@ import org.opennms.netmgt.dao.api.MonitoringLocationDao;
 import org.opennms.netmgt.dao.support.FilesystemResourceStorageDao;
 import org.opennms.netmgt.mock.MockNetwork;
 import org.opennms.netmgt.mock.MockPollerConfig;
+import org.opennms.netmgt.mock.MockThresholdingFactory;
 import org.opennms.netmgt.poller.MonitoredService;
 import org.opennms.netmgt.poller.PollStatus;
 import org.opennms.netmgt.poller.ServiceMonitor;
 import org.opennms.netmgt.poller.mock.MockMonitoredService;
 import org.opennms.netmgt.poller.support.AbstractServiceMonitor;
 import org.opennms.netmgt.rrd.RrdStrategy;
-import org.opennms.netmgt.threshd.ThresholdingFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -66,16 +64,12 @@ import com.google.common.collect.Maps;
  *
  * @author jwhite
  */
-@ContextConfiguration(locations = { "classpath:/META-INF/opennms/applicationContext-thresholding.xml" })
 public class LatencyStoringServiceMonitorAdaptorPersistenceTest {
 
     @Rule
     public TemporaryFolder m_tempFolder = new TemporaryFolder();
 
     private RrdPersisterFactory m_persisterFactory;
-
-    @Autowired
-    private ThresholdingFactory m_thresholdingFactory;
 
     private FilesystemResourceStorageDao m_resourceStorageDao;
     private RrdStrategy<Object, Object> m_rrdStrategy;
@@ -134,7 +128,7 @@ public class LatencyStoringServiceMonitorAdaptorPersistenceTest {
         pollerConfig.setRRAList(pkg, Lists.newArrayList("RRA:AVERAGE:0.5:1:2016"));
 
         LatencyStoringServiceMonitorAdaptor lssma = new LatencyStoringServiceMonitorAdaptor(
-                pollerConfig, pkg, m_persisterFactory, m_thresholdingFactory);
+                pollerConfig, pkg, m_persisterFactory, new MockThresholdingFactory());
 
         MonitoredService monitoredService = new MockMonitoredService(3, "Firewall", locationName,
                 InetAddress.getByName("192.168.1.5"), "SMTP");

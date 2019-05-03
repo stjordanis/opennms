@@ -64,12 +64,12 @@ import org.opennms.netmgt.events.api.EventConstants;
 import org.opennms.netmgt.filter.FilterDaoFactory;
 import org.opennms.netmgt.filter.api.FilterDao;
 import org.opennms.netmgt.mock.MockNetwork;
+import org.opennms.netmgt.mock.MockThresholdingFactory;
 import org.opennms.netmgt.model.events.EventBuilder;
 import org.opennms.netmgt.poller.MonitoredService;
 import org.opennms.netmgt.poller.PollStatus;
 import org.opennms.netmgt.poller.ServiceMonitor;
 import org.opennms.netmgt.poller.support.AbstractServiceMonitor;
-import org.opennms.netmgt.threshd.ThresholdingFactory;
 import org.opennms.test.JUnitConfigurationEnvironment;
 import org.opennms.test.mock.EasyMockUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,12 +103,6 @@ public class LatencyStoringServiceMonitorAdaptorIT implements TemporaryDatabaseA
 
     @Autowired
     private PersisterFactory m_persisterFactory;
-
-    @Autowired
-    private ThresholdingFactory m_thresholdingFactory;
-
-    @Autowired
-    private ResourceStorageDao m_resourceStorageDao;
 
     @Override
     public void setTemporaryDatabase(MockDatabase database) {
@@ -245,7 +239,7 @@ public class LatencyStoringServiceMonitorAdaptorIT implements TemporaryDatabaseA
         expect(m_pollerConfig.getStep(pkg)).andReturn(step).anyTimes();
 
         m_mocks.replayAll();
-        LatencyStoringServiceMonitorAdaptor adaptor = new LatencyStoringServiceMonitorAdaptor(m_pollerConfig, pkg, m_persisterFactory, m_thresholdingFactory);
+        LatencyStoringServiceMonitorAdaptor adaptor = new LatencyStoringServiceMonitorAdaptor(m_pollerConfig, pkg, m_persisterFactory, new MockThresholdingFactory());
         // Make sure that the ThresholdingSet initializes with test settings
         String previousOpennmsHome = System.setProperty("opennms.home", "src/test/resources");
         for (int i=0; i<rtValues.length; i++) {

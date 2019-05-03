@@ -75,9 +75,17 @@ import org.opennms.netmgt.scheduler.Scheduler;
 import org.opennms.netmgt.snmp.InetAddrUtils;
 import org.opennms.netmgt.threshd.ThresholdingFactory;
 import org.opennms.test.FileAnticipator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 
+@ContextConfiguration(locations = {
+        "classpath:/META-INF/opennms/applicationContext-thresholding.xml"
+})
 public class CollectableServiceTest {
+
+    @Autowired
+    private ThresholdingFactory thresholdingFactory;
 
     private CollectionSpecification spec;
     private Scheduler scheduler;
@@ -232,7 +240,6 @@ public class CollectableServiceTest {
         PlatformTransactionManager transMgr = mock(PlatformTransactionManager.class);
         RrdPersisterFactory persisterFactory = new RrdPersisterFactory();
         persisterFactory.setRrdStrategy(rrdStrategy);
-        ThresholdingFactory thresholdingFactory = new ThresholdingFactory();
         ResourceStorageDao resourceStorageDao = mock(ResourceStorageDao.class);
 
         // Disable thresholding

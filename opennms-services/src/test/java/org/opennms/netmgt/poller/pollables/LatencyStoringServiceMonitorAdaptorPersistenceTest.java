@@ -55,6 +55,8 @@ import org.opennms.netmgt.poller.mock.MockMonitoredService;
 import org.opennms.netmgt.poller.support.AbstractServiceMonitor;
 import org.opennms.netmgt.rrd.RrdStrategy;
 import org.opennms.netmgt.threshd.ThresholdingFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -64,13 +66,17 @@ import com.google.common.collect.Maps;
  *
  * @author jwhite
  */
+@ContextConfiguration(locations = { "classpath:/META-INF/opennms/applicationContext-thresholding.xml" })
 public class LatencyStoringServiceMonitorAdaptorPersistenceTest {
 
     @Rule
     public TemporaryFolder m_tempFolder = new TemporaryFolder();
 
     private RrdPersisterFactory m_persisterFactory;
+
+    @Autowired
     private ThresholdingFactory m_thresholdingFactory;
+
     private FilesystemResourceStorageDao m_resourceStorageDao;
     private RrdStrategy<Object, Object> m_rrdStrategy;
 
@@ -82,7 +88,6 @@ public class LatencyStoringServiceMonitorAdaptorPersistenceTest {
         m_resourceStorageDao.setRrdDirectory(m_tempFolder.newFolder("response"));
         m_persisterFactory = new RrdPersisterFactory();
         m_persisterFactory.setResourceStorageDao(m_resourceStorageDao);
-        m_thresholdingFactory = new ThresholdingFactory();
         m_rrdStrategy = EasyMock.createMock(RrdStrategy.class);
         m_persisterFactory.setRrdStrategy(m_rrdStrategy);
     }

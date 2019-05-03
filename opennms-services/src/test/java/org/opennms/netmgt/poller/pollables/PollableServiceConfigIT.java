@@ -77,6 +77,7 @@ import com.google.common.collect.Lists;
         "classpath:/META-INF/opennms/applicationContext-rpc-client-mock.xml",
         "classpath:/META-INF/opennms/applicationContext-serviceMonitorRegistry.xml",
         "classpath:/META-INF/opennms/applicationContext-rpc-poller.xml",
+        "classpath:/META-INF/opennms/applicationContext-thresholding.xml",
         "classpath:/META-INF/opennms/applicationContext-mockDao.xml"
 })
 @JUnitConfigurationEnvironment(systemProperties={
@@ -86,6 +87,9 @@ public class PollableServiceConfigIT {
 
     @Autowired
     private LocationAwarePollerClient m_locationAwarePollerClient;
+
+    @Autowired
+    private ThresholdingFactory m_thresholdingFactory;
 
     @Test
     public void testPollableServiceConfig() throws Exception {
@@ -98,7 +102,6 @@ public class PollableServiceConfigIT {
         IOUtils.closeQuietly(is);
 
         PersisterFactory persisterFactory = new MockPersisterFactory();
-        ThresholdingFactory thresholdingFactory = new ThresholdingFactory();
         ResourceStorageDao resourceStorageDao = new FilesystemResourceStorageDao();
 
         final PollContext context = mock(PollContext.class);
@@ -110,7 +113,7 @@ public class PollableServiceConfigIT {
         final Package pkg = factory.getPackage("MapQuest");
         final Timer timer = mock(Timer.class);
         final PollableServiceConfig psc = new PollableServiceConfig(svc, factory, pollOutagesConfig, pkg, timer,
-                persisterFactory, thresholdingFactory, m_locationAwarePollerClient);
+                persisterFactory, m_thresholdingFactory, m_locationAwarePollerClient);
         PollStatus pollStatus = psc.poll();
         assertThat(pollStatus.getReason(), not(containsString("Unexpected exception")));
     }

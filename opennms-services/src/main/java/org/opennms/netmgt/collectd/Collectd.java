@@ -192,6 +192,9 @@ public class Collectd extends AbstractServiceDaemon implements
     private PersisterFactory m_persisterFactory;
 
     @Autowired
+    private ThresholdingFactory m_thresholdingFactory;
+
+    @Autowired
     private ResourceStorageDao m_resourceStorageDao;
 
     /**
@@ -521,7 +524,6 @@ public class Collectd extends AbstractServiceDaemon implements
                  * interface, service and package pairing
                  */
 
-                ThresholdingFactory m_thresholdingFactory = null;
                 cSvc = new CollectableService(
                     iface, 
                     m_ifaceDao, 
